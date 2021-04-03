@@ -8,8 +8,8 @@ import { SmoothingInput } from './SmoothingInput';
 export function Editor() {
 	const colors = useMemo(() => palette.slice(1), []);
 
-	const [color, setColor] = useState(palette[12]);
-	const [backgroundColor, setBackgroundColor] = useState(palette[1]);
+	const [color, setColor] = useState(palette[13]);
+	const [backgroundColor, setBackgroundColor] = useState(palette[15]);
 
 	const [fontFamily, setFontFamily] = useState('Luminari, Monotype Corsiva');
 	const [fontSize, setFontSize] = useState('30');
@@ -19,7 +19,7 @@ export function Editor() {
 	const [text, setText] = useState('The Last\nFantasy\nGame IV');
 
 	const [outline, setOutline] = useState(false);
-	const [outlineColor, setOutlineColor] = useState(palette[2]);
+	const [outlineColor, setOutlineColor] = useState(palette[12]);
 	const [outlineThickness, setOutlineThickness] = useState('4');
 
 	const [shadow, setShadow] = useState(false);
