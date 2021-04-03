@@ -7,6 +7,8 @@ const useBrowserLayoutEffect =
 	typeof window !== 'undefined' ? useLayoutEffect : () => {};
 
 export function FontPreview({
+	originX,
+	originY,
 	text,
 	font,
 	fontSize,
@@ -54,6 +56,8 @@ export function FontPreview({
 
 		const bounds = drawTextToCanvas(
 			ctx,
+			originX,
+			originY,
 			text,
 			font,
 			fontSize,
@@ -71,7 +75,7 @@ export function FontPreview({
 			findNearestColor
 		);
 
-		if (onImageDataChanged) {
+		if (bounds && onImageDataChanged) {
 			const imageData = getImageData(
 				ctx,
 				bounds,
@@ -81,6 +85,8 @@ export function FontPreview({
 			onImageDataChanged(imageData);
 		}
 	}, [
+		originX,
+		originY,
 		text,
 		font,
 		fontSize,
@@ -115,6 +121,8 @@ export function FontPreview({
 
 function drawTextToCanvas(
 	ctx,
+	originX,
+	originY,
 	text,
 	font,
 	fontSize,
@@ -133,6 +141,14 @@ function drawTextToCanvas(
 ) {
 	ctx.fillStyle = backgroundColor;
 	ctx.fillRect(0, 0, width, height);
+
+	if (!font) {
+		return;
+	}
+
+	ctx.save();
+
+	ctx.translate(originX, originY);
 
 	ctx.fillStyle = color;
 	ctx.textBaseline = 'top';
@@ -153,18 +169,18 @@ function drawTextToCanvas(
 			ctx.shadowOffsetX = +shadowOffsetX;
 			ctx.shadowOffsetY = +shadowOffsetY;
 
-			ctx.fillText(line, 5, 5 + index * (+fontSize + +lineSpacing));
+			ctx.fillText(line, 0, index * (+fontSize + +lineSpacing));
 			if (+outlineThickness) {
-				ctx.strokeText(line, 5, 5 + index * (+fontSize + +lineSpacing));
+				ctx.strokeText(line, 0, index * (+fontSize + +lineSpacing));
 			}
 
 			ctx.restore();
 		}
 
 		if (+outlineThickness) {
-			ctx.strokeText(line, 5, 5 + index * (+fontSize + +lineSpacing));
+			ctx.strokeText(line, 0, index * (+fontSize + +lineSpacing));
 		}
-		ctx.fillText(line, 5, 5 + index * (+fontSize + +lineSpacing));
+		ctx.fillText(line, 0, index * (+fontSize + +lineSpacing));
 	}
 
 	const imgData = ctx.getImageData(0, 0, width, height);
@@ -211,6 +227,8 @@ function drawTextToCanvas(
 	}
 
 	ctx.putImageData(imgData, 0, 0);
+
+	ctx.restore();
 
 	return { minX, maxX, minY, maxY };
 }

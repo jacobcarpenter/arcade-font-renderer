@@ -8,8 +8,6 @@ const GlobalStyle = createGlobalStyle(css`
 	body {
 		margin: 0;
 		padding: 16px;
-		min-width: 512px;
-		max-width: 640px;
 
 		background-color: #fdeded;
 
