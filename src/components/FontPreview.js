@@ -188,9 +188,9 @@ function drawTextToCanvas(
 	const imgData = ctx.getImageData(0, 0, width, height);
 	const { data } = imgData;
 
-	let minX = width;
+	let minX = width - 1;
 	let maxX = 0;
-	let minY = height;
+	let minY = height - 1;
 	let maxY = 0;
 
 	for (
@@ -209,7 +209,7 @@ function drawTextToCanvas(
 
 		const pixelIndex = pixelStartIndex / 4;
 		const x = pixelIndex % width;
-		const y = pixelIndex / width;
+		const y = Math.trunc(pixelIndex / width);
 
 		// track bounds of non-background pixels
 		if (value !== backgroundColor) {
@@ -233,10 +233,10 @@ function drawTextToCanvas(
 	ctx.restore();
 
 	return {
-		x: Math.floor(minX),
-		y: Math.floor(minY),
-		width: Math.ceil(maxX - minX),
-		height: Math.ceil(maxY - minY),
+		x: minX,
+		y: minY,
+		width: maxX - minX + 1,
+		height: maxY - minY + 1,
 	};
 }
 
