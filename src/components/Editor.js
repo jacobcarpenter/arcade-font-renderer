@@ -44,7 +44,7 @@ export function Editor() {
 	const [shadowOffsetX, setShadowOffsetX] = useState(3);
 	const [shadowOffsetY, setShadowOffsetY] = useState(3);
 
-	const [imgData, setImgData] = useState('');
+	const [imageData, setImageData] = useState(null);
 
 	useEffect(() => {
 		if (fontMode === 'local') {
@@ -72,7 +72,7 @@ export function Editor() {
 		<div
 			css={`
 				display: grid;
-				grid-template-columns: auto 1fr;
+				grid-template-columns: 480px 1fr;
 				grid-row-gap: 8px;
 				grid-column-gap: 32px;
 				grid-template-rows: auto 1fr;
@@ -85,25 +85,47 @@ export function Editor() {
 				}
 			`}
 		>
-			<FontPreview
-				originX={originX}
-				originY={originY}
-				text={text}
-				font={renderedFontFamily}
-				fontSize={fontSize}
-				lineSpacing={lineSpacing}
-				color={color}
-				backgroundColor={backgroundColor}
-				outlineColor={outline && outlineColor}
-				outlineThickness={outline && outlineThickness}
-				shadowColor={shadow && shadowColor}
-				shadowBlur={shadow && shadowBlur}
-				shadowOffsetX={shadow && shadowOffsetX}
-				shadowOffsetY={shadow && shadowOffsetY}
-				smoothing={smoothing}
-				palette={palette}
-				onImageDataChanged={setImgData}
-			/>
+			<Stack
+				spacing={8}
+				css={`
+					max-width: 480px;
+				`}
+			>
+				<FontPreview
+					originX={originX}
+					originY={originY}
+					text={text}
+					font={renderedFontFamily}
+					fontSize={fontSize}
+					lineSpacing={lineSpacing}
+					color={color}
+					backgroundColor={backgroundColor}
+					outlineColor={outline && outlineColor}
+					outlineThickness={outline && outlineThickness}
+					shadowColor={shadow && shadowColor}
+					shadowBlur={shadow && shadowBlur}
+					shadowOffsetX={shadow && shadowOffsetX}
+					shadowOffsetY={shadow && shadowOffsetY}
+					smoothing={smoothing}
+					palette={palette}
+					onImageDataChanged={setImageData}
+				/>
+
+				{imageData && (
+					<div
+						css={`
+							@media (max-width: 990px) {
+								text-align: right;
+							}
+						`}
+					>
+						<DimensionsDisplay
+							width={imageData.width}
+							height={imageData.height}
+						/>
+					</div>
+				)}
+			</Stack>
 
 			<Stack
 				spacing={16}
@@ -354,34 +376,36 @@ export function Editor() {
 				</HeaderedSection>
 			</Stack>
 
-			<div
-				css={`
-					justify-self: end;
-				`}
-			>
-				<button
+			{imageData && (
+				<div
 					css={`
-						border: solid 1px #274060;
-						border-radius: 4px;
-						padding: 6px 12px;
-
-						background: #274060;
-						color: #ffffff;
-
-						cursor: pointer;
-
-						&:hover {
-							background: #1b2845;
-							color: #ebfaff;
-						}
+						justify-self: end;
 					`}
-					onClick={() => {
-						navigator.clipboard.writeText(imgData);
-					}}
 				>
-					Copy Image Data
-				</button>
-			</div>
+					<button
+						css={`
+							border: solid 1px #274060;
+							border-radius: 4px;
+							padding: 6px 12px;
+
+							background: #274060;
+							color: #ffffff;
+
+							cursor: pointer;
+
+							&:hover {
+								background: #1b2845;
+								color: #ebfaff;
+							}
+						`}
+						onClick={() => {
+							navigator.clipboard.writeText(imageData.data);
+						}}
+					>
+						Copy Image Data
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
@@ -432,5 +456,18 @@ function HeaderedSection({ header, children }) {
 			</header>
 			{children}
 		</section>
+	);
+}
+
+function DimensionsDisplay({ width, height }) {
+	return (
+		<div
+			css={`
+				color: #333;
+				font-size: 10pt;
+			`}
+		>
+			Text Dimensions: {width} &times; {height}
+		</div>
 	);
 }

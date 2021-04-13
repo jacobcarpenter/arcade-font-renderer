@@ -82,7 +82,11 @@ export function FontPreview({
 				backgroundColor,
 				findNearestColor
 			);
-			onImageDataChanged(imageData);
+			onImageDataChanged({
+				data: imageData,
+				width: bounds.width,
+				height: bounds.height,
+			});
 		}
 	}, [
 		originX,
@@ -110,11 +114,9 @@ export function FontPreview({
 			ref={canvasRef}
 			width={width}
 			height={height}
-			style={{
-				width: `${width * scale}px`,
-				height: `${height * scale}px`,
-				imageRendering: 'pixelated',
-			}}
+			css={`
+				image-rendering: pixelated;
+			`}
 		/>
 	);
 }
@@ -230,16 +232,21 @@ function drawTextToCanvas(
 
 	ctx.restore();
 
-	return { minX, maxX, minY, maxY };
+	return {
+		x: Math.floor(minX),
+		y: Math.floor(minY),
+		width: Math.ceil(maxX - minX),
+		height: Math.ceil(maxY - minY),
+	};
 }
 
 function getImageData(
 	ctx,
-	{ minX, maxX, minY, maxY },
+	{ x, y, width, height },
 	backgroundColor,
 	findNearestColor
 ) {
-	const subImgData = ctx.getImageData(minX, minY, maxX - minX, maxY - minY);
+	const subImgData = ctx.getImageData(x, y, width, height);
 	const { data, width: drawnWidth } = subImgData;
 
 	let img = '';
