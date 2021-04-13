@@ -75,18 +75,20 @@ export function FontPreview({
 			findNearestColor
 		);
 
-		if (bounds && onImageDataChanged) {
+		if (onImageDataChanged) {
 			const imageData = getImageData(
 				ctx,
 				bounds,
 				backgroundColor,
 				findNearestColor
 			);
-			onImageDataChanged({
-				data: imageData,
-				width: bounds.width,
-				height: bounds.height,
-			});
+			onImageDataChanged(
+				imageData && {
+					data: imageData,
+					width: bounds.width,
+					height: bounds.height,
+				}
+			);
 		}
 	}, [
 		originX,
@@ -235,17 +237,21 @@ function drawTextToCanvas(
 	return {
 		x: minX,
 		y: minY,
-		width: maxX - minX + 1,
-		height: maxY - minY + 1,
+		width: Math.max(maxX - minX + 1, 0),
+		height: Math.max(maxY - minY + 1, 0),
 	};
 }
 
 function getImageData(
 	ctx,
-	{ x, y, width, height },
+	{ x, y, width, height } = {},
 	backgroundColor,
 	findNearestColor
 ) {
+	if (!width && !height) {
+		return;
+	}
+
 	const subImgData = ctx.getImageData(x, y, width, height);
 	const { data, width: drawnWidth } = subImgData;
 
