@@ -111,6 +111,9 @@ export function Editor() {
 					dithering={dithering}
 					palette={palette}
 					onImageDataChanged={setImageData}
+					css={`
+						width: 100%;
+					`}
 				/>
 
 				{imageData && (

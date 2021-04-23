@@ -7,6 +7,7 @@ const useBrowserLayoutEffect =
 	typeof window !== 'undefined' ? useLayoutEffect : () => {};
 
 export function FontPreview({
+	className,
 	originX,
 	originY,
 	text,
@@ -116,12 +117,12 @@ export function FontPreview({
 	return (
 		<canvas
 			ref={canvasRef}
+			className={className}
 			width={width}
 			height={height}
 			css={`
 				image-rendering: pixelated;
 				image-rendering: crisp-edges;
-				width: 100%;
 			`}
 		/>
 	);
