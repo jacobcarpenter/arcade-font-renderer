@@ -120,6 +120,8 @@ export function FontPreview({
 			height={height}
 			css={`
 				image-rendering: pixelated;
+				image-rendering: crisp-edges;
+				width: 100%;
 			`}
 		/>
 	);
@@ -227,12 +229,23 @@ function drawTextToCanvas(
 			const errB = oldB - rgb.b;
 
 			// https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
-			const neighbors = [
+			const floydSteinberg = [
 				[[1, 0], 7 / 16],
 				[[-1, 1], 3 / 16],
 				[[0, 1], 5 / 16],
 				[[1, 1], 1 / 16],
 			];
+
+			const atkinson = [
+				[[1, 0], 1 / 8],
+				[[2, 0], 1 / 8],
+				[[-1, 1], 1 / 8],
+				[[0, 1], 1 / 8],
+				[[1, 1], 1 / 8],
+				[[0, 2], 1 / 8],
+			];
+
+			const neighbors = floydSteinberg;
 
 			for (const [offset, factor] of neighbors) {
 				const neighborX = x + offset[0];
