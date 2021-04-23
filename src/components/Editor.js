@@ -4,7 +4,7 @@ import { palette } from '../palette';
 import { Stack, HorizontalFlex, FlexInput, NoFlex } from './LayoutHelpers';
 import { FontPreview } from './FontPreview';
 import { ColorPicker } from './ColorPicker';
-import { SmoothingInput } from './SmoothingInput';
+import { LabeledCheckbox } from './LabeledCheckbox';
 
 const DynamicFontPicker = dynamic(() => import('font-picker-react'), {
 	ssr: false,
@@ -28,6 +28,7 @@ export function Editor() {
 
 	const [lineSpacing, setLineSpacing] = useState('4');
 	const [smoothing, setSmoothing] = useState(true);
+	const [dithering, setDithering] = useState(false);
 
 	const [text, setText] = useState('RoboMan\n 20XX');
 
@@ -107,6 +108,7 @@ export function Editor() {
 					shadowOffsetX={shadow && shadowOffsetX}
 					shadowOffsetY={shadow && shadowOffsetY}
 					smoothing={smoothing}
+					dithering={dithering}
 					palette={palette}
 					onImageDataChanged={setImageData}
 				/>
@@ -186,7 +188,18 @@ export function Editor() {
 							)}
 
 							<NoFlex>
-								<SmoothingInput value={smoothing} onChange={setSmoothing} />
+								<LabeledCheckbox
+									label="Smoothing"
+									value={smoothing}
+									onChange={setSmoothing}
+								/>
+							</NoFlex>
+							<NoFlex>
+								<LabeledCheckbox
+									label="Dithering"
+									value={dithering}
+									onChange={setDithering}
+								/>
 							</NoFlex>
 						</HorizontalFlex>
 					</HeaderedSection>

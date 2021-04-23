@@ -22,7 +22,8 @@ export function FontPreview({
 	shadowOffsetX,
 	shadowOffsetY,
 	palette,
-	smoothing = true,
+	smoothing,
+	dithering,
 	width = 160,
 	height = 120,
 	onImageDataChanged,
@@ -71,6 +72,7 @@ export function FontPreview({
 			shadowOffsetY,
 			width,
 			height,
+			dithering,
 			findNearestColor
 		);
 
@@ -106,6 +108,7 @@ export function FontPreview({
 		shadowOffsetY,
 		width,
 		height,
+		dithering,
 		findNearestColor,
 		onImageDataChanged,
 	]);
@@ -140,6 +143,7 @@ function drawTextToCanvas(
 	shadowOffsetY,
 	width,
 	height,
+	dithering,
 	findNearestColor
 ) {
 	ctx.fillStyle = backgroundColor;
@@ -189,6 +193,10 @@ function drawTextToCanvas(
 	const imgData = ctx.getImageData(0, 0, width, height);
 	const { data } = imgData;
 
+	// map to wider range than 0-255 for intermediate out-of-bounds
+	// states for pixel channels during dithering calculation
+	const d = new Int16Array(data);
+
 	let minX = width - 1;
 	let maxX = 0;
 	let minY = height - 1;
@@ -196,21 +204,62 @@ function drawTextToCanvas(
 
 	for (
 		let pixelStartIndex = 0;
-		pixelStartIndex < data.length;
+		pixelStartIndex < d.length;
 		pixelStartIndex += 4
 	) {
-		const color = getColorAtOffset(data, pixelStartIndex);
-		const nearestResult = findNearestColor(color);
-		const { value, rgb } = nearestResult;
-		[
-			data[pixelStartIndex],
-			data[pixelStartIndex + 1],
-			data[pixelStartIndex + 2],
-		] = [rgb.r, rgb.g, rgb.b];
-
 		const pixelIndex = pixelStartIndex / 4;
 		const x = pixelIndex % width;
 		const y = Math.trunc(pixelIndex / width);
+
+		const color = getColorAtOffset(d, pixelStartIndex);
+		const nearestResult = findNearestColor(color);
+		const { value, rgb } = nearestResult;
+
+		if (dithering) {
+			const [oldR, oldG, oldB] = [
+				d[pixelStartIndex],
+				d[pixelStartIndex + 1],
+				d[pixelStartIndex + 2],
+			];
+
+			const errR = oldR - rgb.r;
+			const errG = oldG - rgb.g;
+			const errB = oldB - rgb.b;
+
+			// https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
+			const neighbors = [
+				[[1, 0], 7 / 16],
+				[[-1, 1], 3 / 16],
+				[[0, 1], 5 / 16],
+				[[1, 1], 1 / 16],
+			];
+
+			for (const [offset, factor] of neighbors) {
+				const neighborX = x + offset[0];
+				const neighborY = y + offset[1];
+
+				if (neighborX > 0 && neighborX < width && neighborY < height) {
+					const neighborPixelIndex = neighborY * width + neighborX;
+					const neighborPixelDataStart = neighborPixelIndex * 4;
+
+					[
+						d[neighborPixelDataStart],
+						d[neighborPixelDataStart + 1],
+						d[neighborPixelDataStart + 2],
+					] = [
+						d[neighborPixelDataStart] + Math.round(errR * factor),
+						d[neighborPixelDataStart + 1] + Math.round(errG * factor),
+						d[neighborPixelDataStart + 2] + Math.round(errB * factor),
+					];
+				}
+			}
+		}
+
+		[d[pixelStartIndex], d[pixelStartIndex + 1], d[pixelStartIndex + 2]] = [
+			rgb.r,
+			rgb.g,
+			rgb.b,
+		];
 
 		// track bounds of non-background pixels
 		if (value !== backgroundColor) {
@@ -229,7 +278,8 @@ function drawTextToCanvas(
 		}
 	}
 
-	ctx.putImageData(imgData, 0, 0);
+	const newImgData = new ImageData(new Uint8ClampedArray(d), width, height);
+	ctx.putImageData(newImgData, 0, 0);
 
 	ctx.restore();
 
@@ -284,7 +334,11 @@ function getColorAtOffset(data, colorStartIndex) {
 		data[colorStartIndex + 2],
 	];
 
-	return `#${r.toString(16).padStart(2, '0')}${g
+	return `#${clamp(r, 0, 255).toString(16).padStart(2, '0')}${clamp(g, 0, 255)
 		.toString(16)
-		.padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+		.padStart(2, '0')}${clamp(b, 0, 255).toString(16).padStart(2, '0')}`;
+}
+
+function clamp(value, min, max) {
+	return Math.max(min, Math.min(value, max));
 }

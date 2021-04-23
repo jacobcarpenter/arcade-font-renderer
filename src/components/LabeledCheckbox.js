@@ -1,4 +1,4 @@
-export function SmoothingInput({ value, onChange }) {
+export function LabeledCheckbox({ label, value, onChange }) {
 	return (
 		<label>
 			<input
@@ -8,7 +8,7 @@ export function SmoothingInput({ value, onChange }) {
 					onChange(e.target.checked);
 				}}
 			/>{' '}
-			Smoothing
+			{label}
 		</label>
 	);
 }
