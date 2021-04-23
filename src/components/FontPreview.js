@@ -25,7 +25,6 @@ export function FontPreview({
 	smoothing = true,
 	width = 160,
 	height = 120,
-	scale = 3,
 	onImageDataChanged,
 }) {
 	const canvasRef = useRef();
